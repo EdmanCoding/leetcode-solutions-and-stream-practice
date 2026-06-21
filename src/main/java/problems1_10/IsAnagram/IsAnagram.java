@@ -2,6 +2,9 @@ package problems1_10.IsAnagram;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class IsAnagram {
     // my first the slowest assumption
@@ -114,6 +117,35 @@ public class IsAnagram {
             map.put(c, count);
         }
         return true;
+    }
+
+    // ============ Streams ============
+
+    // Плюсы: коротко, декларативно.
+    // Минусы: нет досрочного выхода, мапы строятся полностью. Для коротких строк ок, для длинных — оверхед.
+    public boolean isAnagram7(String s, String t) {
+        if (s.length() != t.length()) return false;
+        Map<Integer, Long> freqS = s.chars().boxed()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        Map<Integer, Long> freqT = t.chars().boxed()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        return freqS.equals(freqT);
+    }
+    // s.chars() возвращает IntStream кодовых точек символов.
+
+
+    // Тот же allMatch с мутацией, как в Contains Duplicate
+    // Минусы: громоздко, побочные эффекты, нечитаемо. Для продакшена я бы не рекомендовал.
+    public boolean isAnagram8(String s, String t) {
+        if (s.length() != t.length()) return false;
+        Map<Character, Integer> map = new HashMap<>();
+        s.chars().forEach(c -> map.merge((char) c, 1, Integer::sum));
+        return t.chars().allMatch(c -> {
+            int count = map.getOrDefault((char) c, 0);
+            if (count == 0) return false;
+            map.put((char) c, count - 1);
+            return true;
+        });
     }
 
     public static void main(String[] args) {

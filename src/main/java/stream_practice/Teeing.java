@@ -3,6 +3,7 @@ package stream_practice;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public class Teeing {
@@ -76,5 +77,43 @@ public class Teeing {
                         }
                 ));
         System.out.println(threeMax);
+        //===================================================================================
+
+        record Student(String name, String grade, int score) {}
+
+        List<Student> students = List.of(
+                new Student("Alice", "A", 95),
+                new Student("Bob",   "A", 60),
+                new Student("Charlie", "B", 70),
+                new Student("Diana", "B", 85),
+                new Student("Eve",   "C", 40),
+                new Student("Frank", "C", 55)
+        );
+        // Найти глобального лидера (студента с максимальным баллом) – используй stream.max(...).
+        // Для каждой параллели (grade) найти студента с самым низким баллом – используй groupingBy + Collectors.minBy(...).
+        // Сформировать строку вида:
+        // "Global top: <имя> (<балл>), Grade <grade> lowest: <имя> (<балл>), ..."
+        // Перечисление параллелей – в алфавитном порядке. Если список пуст – вернуть "No students".
+        Student globalTop = students.stream().max((s1,s2)-> s1.score()- s2.score()).orElse(null);
+        System.out.println(globalTop);
+        Map<String,Student> gradesWithMin = students.stream()
+                .collect(Collectors.groupingBy(
+                        Student::grade,
+                        TreeMap::new,
+                        Collectors.collectingAndThen(
+                        Collectors.minBy((Student s1, Student s2)-> s1.score()-s2.score()),
+                        opt->opt.orElse(null)
+                                )
+                ));
+        StringBuilder finalString = new StringBuilder("Global top: " + globalTop.name() + " (" + globalTop.score() + "), ");
+        for(Map.Entry<String,Student> ent : gradesWithMin.entrySet()){
+            finalString.append("Grade ").append(ent.getKey()).append(" lowest: ")
+                    .append(ent.getValue().name()).append(" (").append(ent.getValue().score()).append("), ");
+        }
+        if (finalString.length() >= 2) {
+            finalString.setLength(finalString.length() - 2);
+            finalString.append('.');
+        }
+        System.out.println(finalString);
     }
 }

@@ -2,7 +2,12 @@ package problems1_10.firstUniqueChar;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
+import java.util.stream.IntStream;
 
 public class FirstUniqueChar {
     // up to O(n²) operations, my initial solution
@@ -68,8 +73,34 @@ public class FirstUniqueChar {
         return queue.isEmpty() ? -1 : queue.peek();
     }
 
+    // stream solution
+    public static int firstUniqChar5(String s) {
+        Map<Character, Long> freq = s.chars()
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        LinkedHashMap::new,
+                        Collectors.counting()
+                ));
+        return freq.entrySet().stream()
+                .filter(e -> e.getValue() == 1)
+                .map(e -> s.indexOf(e.getKey()))
+                .findFirst()
+                .orElse(-1);
+    }
+
+    // stream solution
+    public int firstUniqChar6(String s) {
+        int[] freq = new int[26];
+        s.chars().forEach(c -> freq[c - 'a']++);
+        return IntStream.range(0, s.length())
+                .filter(i -> freq[s.charAt(i) - 'a'] == 1)
+                .findFirst()
+                .orElse(-1);
+    }
+
     public static void main(String[] args) {
-        System.out.println(firstUniqChar2("leetcode"));
+        System.out.println(firstUniqChar5("leetcode"));
         System.out.println(firstUniqChar2("loveleetcode"));
         System.out.println(firstUniqChar2("aabb"));
     }
